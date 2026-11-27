@@ -67,12 +67,18 @@ unset LISTEN45_EMULATOR_PASSWORD
 app=eu.x45.listen45
 "$adb" install "$test_apk"
 "$adb" shell pm list packages -e --user 0 "$app" | tr -d '\r' | grep -Fx "package:$app"
-"$adb" shell cmd package resolve-activity --brief --user 0 \
+resolved=$("$adb" shell cmd package resolve-activity --brief --user 0 \
     -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p "$app" |
-    tr -d '\r' | grep -Fx "$app/.ui.MainActivity"
+    tr -d '\r' | tail -n 1)
+printf 'Launcher component: %s\n' "$resolved"
+test "$resolved" = "$app/.ui.MainActivity"
 "$adb" shell am start -W --user 0 \
-    -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p "$app" |
-    tr -d '\r' | grep -Fx 'Status: ok'
+    -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "$resolved" |
+    tr -d '\r' | tee "$RUNNER_TEMP/listen45-start.log"
+if ! grep -Fxq 'Status: ok' "$RUNNER_TEMP/listen45-start.log"; then
+    "$adb" logcat -d -t 200
+    exit 1
+fi
 "$adb" shell uiautomator dump /sdcard/listen45-launcher.xml
 "$adb" exec-out cat /sdcard/listen45-launcher.xml > "$RUNNER_TEMP/listen45-launcher.xml"
 python3 - "$RUNNER_TEMP/listen45-launcher.xml" <<'PYTHON'
