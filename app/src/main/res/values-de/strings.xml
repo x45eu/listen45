@@ -1,0 +1,33 @@
+<resources>
+    <string name="about">Über Listen45</string>
+    <string name="settings">Einstellungen</string>
+    <string name="bottom_navigation_view_identify">Erkennen</string>
+    <string name="bottom_navigation_view_history">Verlauf</string>
+    <string name="liked">Favoriten</string>
+    <string name="identify_record">Musik erkennen</string>
+    <string name="identify_stop">Abbrechen</string>
+    <string name="identify_listening">Höre zu… %1$d s</string>
+    <string name="identify_matching">Vergleiche mit lokalen Referenzen…</string>
+    <string name="identify_no_match">Kein Treffer in deiner Referenzbibliothek.</string>
+    <string name="identify_error">Erkennung fehlgeschlagen. Prüfe das Mikrofon und versuche es erneut.</string>
+    <string name="identify_permission_help">Erlaube den Mikrofonzugriff in den Android-Einstellungen, um Musik zu erkennen.</string>
+    <string name="identify_record_permission_alert_dialog_not_available_title">Kein Mikrofonzugriff</string>
+    <string name="navigate_up">Zurück</string>
+    <string name="catalog_title">Referenzbibliothek</string>
+    <string name="catalog_empty">Füge zuerst eine Referenzaufnahme hinzu.</string>
+    <string name="catalog_add">WAV-Referenz hinzufügen</string>
+    <string name="catalog_help">Importiere eine 16-Bit-PCM-WAV-Datei (Mono oder Stereo, mindestens 5 Sekunden). Listen45 indexiert die ersten zwei Minuten und speichert den Fingerabdruck auf diesem Gerät.</string>
+    <string name="catalog_track_title">Titel</string>
+    <string name="catalog_track_artist">Interpret (optional)</string>
+    <string name="catalog_importing">Referenz wird indexiert…</string>
+    <string name="catalog_import_error">Die Datei konnte nicht indexiert werden. Wähle eine 16-Bit-PCM-WAV-Datei mit mindestens fünf Sekunden unterscheidbarem Ton.</string>
+    <string name="catalog_limit">Die Referenzbibliothek ist voll (100 Titel).</string>
+    <string name="catalog_delete">Referenz entfernen</string>
+    <string name="catalog_delete_message">„%1$s“ aus der Referenzbibliothek entfernen?</string>
+    <string name="catalog_storage_error">Auf die Referenzbibliothek konnte nicht zugegriffen werden.</string>
+    <string name="find_music_qs_tile">Musik erkennen</string>
+    <string name="share">Teilen</string>
+    <string name="search">Suchen</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+</resources>
