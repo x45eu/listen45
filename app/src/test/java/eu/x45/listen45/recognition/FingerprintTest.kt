@@ -30,6 +30,17 @@ class FingerprintTest {
     }
 
     @Test
+    fun matchesReferenceAndMicrophoneAtDifferentSampleRates() {
+        val reference = signal(14, seed = 120)
+        val catalogSamples = resample(reference, sourceRate = 44_100, seconds = 14)
+        val capturedSamples = resample(reference, sourceRate = 48_000, seconds = 8,
+            offset = 2 * Fingerprint.SAMPLE_RATE + 194)
+        val matcher = LandmarkMatcher(Fingerprint.landmarks(capturedSamples))
+        val score = matcher.score(Fingerprint.landmarks(catalogSamples))
+        assertTrue("Expected a match across sample rates, got $score", score >= LandmarkMatcher.MIN_SCORE)
+    }
+
+    @Test
     fun silenceAndShortClipsDoNotGenerateLandmarks() {
         assertTrue(Fingerprint.landmarks(ShortArray(8 * Fingerprint.SAMPLE_RATE)).isEmpty())
         assertTrue(Fingerprint.landmarks(signal(4, seed = 2)).isEmpty())
@@ -66,6 +77,19 @@ class FingerprintTest {
             putInt(dataBytes)
             interleaved.forEach { putShort(it) }
         }.array()
+    }
+
+    private fun resample(samples: ShortArray, sourceRate: Int, seconds: Int, offset: Int = 0): ShortArray {
+        val rate = Fingerprint.SAMPLE_RATE
+        val output = PcmDownsampler(sourceRate, rate * seconds)
+        repeat(sourceRate * seconds) { i ->
+            val time = offset + i.toLong() * rate.toDouble() / sourceRate
+            val frame = time.toInt()
+            val phase = time - frame
+            val next = samples.getOrElse(frame + 1) { samples[frame] }
+            output.add((samples[frame] * (1 - phase) + next * phase).toInt())
+        }
+        return output.result()
     }
 
     private fun signal(seconds: Int, seed: Int): ShortArray {
