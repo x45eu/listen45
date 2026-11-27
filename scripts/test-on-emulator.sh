@@ -79,12 +79,24 @@ if ! grep -Fxq 'Status: ok' "$RUNNER_TEMP/listen45-start.log"; then
     "$adb" logcat -d -t 200
     exit 1
 fi
-"$adb" shell uiautomator dump /sdcard/listen45-launcher.xml
-"$adb" exec-out cat /sdcard/listen45-launcher.xml > "$RUNNER_TEMP/listen45-launcher.xml"
-python3 - "$RUNNER_TEMP/listen45-launcher.xml" <<'PYTHON'
+for attempt in 1 2 3; do
+    "$adb" shell uiautomator dump /sdcard/listen45-launcher.xml
+    "$adb" exec-out cat /sdcard/listen45-launcher.xml > "$RUNNER_TEMP/listen45-launcher.xml"
+    if python3 - "$RUNNER_TEMP/listen45-launcher.xml" <<'PYTHON'
 from sys import argv
 from xml.etree import ElementTree
 nodes = list(ElementTree.parse(argv[1]).iter("node"))
-assert any(node.get("package") == "eu.x45.listen45" and node.get("text") == "Listen45" for node in nodes)
-print("Listen45 is installed and its home screen is visible.")
+if any(node.get("package") == "eu.x45.listen45" and node.get("resource-id", "").endswith(":id/wordmark") for node in nodes):
+    print("Listen45 is installed and its home screen is visible.")
+else:
+    print([(node.get("package"), node.get("resource-id"), node.get("text")) for node in nodes if node.get("text")][:30])
+    raise SystemExit(1)
 PYTHON
+    then
+        exit 0
+    fi
+    sleep 2
+done
+"$adb" shell dumpsys activity activities | grep -iE 'resumed|topResumed' || true
+"$adb" logcat -d -b crash -t 150
+exit 1
