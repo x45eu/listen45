@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import eu.x45.listen45.databinding.ActivityAboutBinding
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.net.toUri
 
 class AboutActivity : AppCompatActivity() {
@@ -35,7 +36,7 @@ class AboutActivity : AppCompatActivity() {
             val info = packageManager.getPackageInfo(packageName, 0)
             binding.descriptionTextView.text = listOf(
                 info.versionName,
-                "(${if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) info.versionCode else info.longVersionCode})"
+                "(${PackageInfoCompat.getLongVersionCode(info)})"
             ).joinToString(" ")
         } catch (e: Throwable) {
             e.printStackTrace()
