@@ -1,0 +1,53 @@
+name: Prepare Listen45 0.1.0 release draft
+
+on:
+  push:
+    branches: [listen45/prepare-v0.1.0]
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    if: github.repository == 'x45eu/listen45'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    concurrency: listen45-release-v0.1.0
+    steps:
+      - name: Create the unpublished release draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_COMMIT: '09d7604299ba3b6c1cde70b2269ed27418df7441'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if draft_url=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" \
+            --jq '.[] | select(.tag_name == "v0.1.0") | .html_url'); then
+            if [[ -n "$draft_url" ]]; then
+              printf 'Existing release for v0.1.0: %s\n' "$draft_url"
+              exit 0
+            fi
+          else
+            exit 1
+          fi
+
+          notes="$RUNNER_TEMP/listen45-release-notes.md"
+          cat > "$notes" <<'NOTES'
+          ## Listen45 0.1.0
+
+          Recognize music. Not users.
+
+          Listen45 erkennt Musik offline anhand einer eigenen Referenzbibliothek. Importiere eine Audioaufnahme (zum Beispiel WAV, MP3, M4A oder FLAC), um passende Ausschnitte per Mikrofon wiederzuerkennen. Referenz-Fingerabdrücke, Verlauf und Favoriten bleiben auf dem Gerät. Audire-Verläufe lassen sich per JSON importieren.
+
+          Die App ist GPL-3.0-lizenziert, werbefrei und kommt ohne Konto, Telemetrie sowie Internetberechtigung aus. Sie katalogisiert die ersten zwei Minuten von bis zu 100 Referenzen.
+
+          Build, Unit-Tests, Android Lint und die Tests für App-Start und MP3-Erkennung auf Android 36 sind erfolgreich. Die Trefferrate mit einem physischen Mikrofon wurde noch nicht systematisch geprüft.
+
+          [Quellcode und Bedienung](https://github.com/x45eu/listen45) · [Datenschutz](https://github.com/x45eu/listen45/blob/main/docs/PRIVACY.md)
+          NOTES
+          jq -n --arg target "$TARGET_COMMIT" --rawfile body "$notes" \
+            '{tag_name:"v0.1.0",target_commitish:$target,name:"Listen45 0.1.0",body:$body,draft:true,prerelease:false}' |
+            gh api --method POST "repos/$GITHUB_REPOSITORY/releases" --input - \
+              --jq '{id, tag_name, target_commitish, draft, html_url}'
