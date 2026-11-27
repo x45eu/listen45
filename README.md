@@ -6,7 +6,7 @@ Listen45 ist eine native Android-App zur Offline-Erkennung von Musik mit einem e
 
 ## Musik erkennen
 
-1. Öffne **Referenzbibliothek** und wähle **WAV-Referenz hinzufügen**. Wähle eine 16-Bit-PCM-WAV-Datei (Mono oder Stereo, 11.025–192 kHz), gib einen Titel ein und speichere den Eintrag. Die Datei muss mindestens fünf Sekunden unterscheidbaren Ton enthalten.
+1. Öffne **Referenzbibliothek** und wähle **Audio-Referenz hinzufügen**. Wähle WAV, MP3, M4A oder FLAC (Mono oder Stereo, abhängig von den Android-Decodern), gib einen Titel ein und speichere den Eintrag. Die Datei muss mindestens fünf Sekunden unterscheidbaren Ton enthalten.
 2. Kehre zur Erkennungsansicht zurück und tippe auf **Musik erkennen**. Erlaube den Mikrofonzugriff und spiele einen Ausschnitt derselben Aufnahme ab. Listen45 erfasst bis zu acht Sekunden Umgebungston.
 3. Treffer erscheinen im Verlauf. Dort kannst du sie favorisieren oder löschen. In den Einstellungen kannst du den Verlauf als JSON exportieren und Audire- oder Listen45-Verlaufsexporte importieren.
 
@@ -20,7 +20,7 @@ Benötigt werden ein JDK 21, Android SDK Platform 36 und Build-Tools 35.0.0. Set
 ./gradlew assembleDebug testDebugUnitTest lintDebug assembleRelease
 ```
 
-Die installierbare Entwicklungs-APK liegt unter `app/build/outputs/apk/debug/app-debug.apk`. Der Release-Build ist unsigniert. [GitHub Actions](.github/workflows/android.yml) baut beide Varianten und stellt die Debug-APK als Workflow-Artefakt bereit.
+Die installierbare Entwicklungs-APK liegt unter `app/build/outputs/apk/debug/app-debug.apk`. Der Release-Build ist unsigniert. [GitHub Actions](.github/workflows/android.yml) baut und prüft beide Varianten, startet die Debug-App im Android-36-Emulator und stellt die APKs als Workflow-Artefakte bereit. Die [Anleitung zur Freigabe](docs/RELEASE.md) beschreibt die Signierung mit dem Projektschlüssel.
 
 ## Architektur und Datenschutz
 

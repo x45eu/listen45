@@ -39,10 +39,36 @@ jobs:
           install_sdk_archive platform-tools_r37.0.3-linux.zip 214548146cadb2ca3508143d8a1d4be4c59de5bb837253e3ede89ed74cf450d1 "$sdk"
           mv "$sdk/build-tools/android-15" "$sdk/build-tools/35.0.0"
           printf 'ANDROID_HOME=%s\nANDROID_SDK_ROOT=%s\n' "$sdk" "$sdk" >> "$GITHUB_ENV"
+      - name: Install the Android 36 test emulator
+        shell: bash
+        run: |
+          sdk="$ANDROID_HOME"
+          image="$sdk/system-images/android-36/default"
+          mkdir -p "$image"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://dl.google.com/android/repository/emulator-linux_x64-16982698.zip -o "$RUNNER_TEMP/emulator.zip"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://dl.google.com/android/repository/sys-img/android/x86_64-36_r02.zip -o "$RUNNER_TEMP/system-image.zip"
+          cd "$RUNNER_TEMP"
+          printf '%s\n' \
+            'cebcc36022e052ac1fa438466ada142d9e4c04dca8127758c3e195a3d5cc42e0  emulator.zip' \
+            'e1b9d9fb665001ef27b16e57d8762a2d54aec6bff617e17506edb8676667b9da  system-image.zip' | sha256sum --check
+          unzip -q emulator.zip -d "$sdk"
+          unzip -q system-image.zip -d "$image"
+          test -c /dev/kvm
+          sudo chgrp "$(id -gn)" /dev/kvm
+          sudo chmod g+rw /dev/kvm
       - name: Build and check Android app
         run: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug assembleRelease
+      - name: Run app and codec tests on Android 36
+        run: scripts/test-on-emulator.sh
       - uses: actions/upload-artifact@v7
         with:
           name: listen45-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: listen45-release-unsigned
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error

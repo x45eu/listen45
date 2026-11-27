@@ -65,12 +65,12 @@
     <string name="identify_permission_help">Allow microphone access in Android settings to recognize music.</string>
     <string name="catalog_title">Reference library</string>
     <string name="catalog_empty">Add a reference track before listening.</string>
-    <string name="catalog_add">Add WAV reference</string>
-    <string name="catalog_help">Import a 16-bit PCM WAV file (mono or stereo, at least 5 seconds). Listen45 indexes the first two minutes and keeps the fingerprint on this device.</string>
+    <string name="catalog_add">Add audio reference</string>
+    <string name="catalog_help">Import at least 5 seconds of mono or stereo audio. Try WAV, MP3, M4A or FLAC. Listen45 indexes the first two minutes and keeps the fingerprint on this device.</string>
     <string name="catalog_track_title">Track title</string>
     <string name="catalog_track_artist">Artist (optional)</string>
     <string name="catalog_importing">Indexing reference…</string>
-    <string name="catalog_import_error">Couldn’t index this file. Choose a 16-bit PCM WAV file with at least five seconds of distinct audio.</string>
+    <string name="catalog_import_error">Couldn’t index this file. Choose a supported audio file with at least five seconds of distinct audio.</string>
     <string name="catalog_limit">The reference library is full (100 tracks).</string>
     <string name="catalog_delete">Remove reference</string>
     <string name="catalog_delete_message">Remove “%1$s” from the reference library?</string>

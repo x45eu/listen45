@@ -10,8 +10,7 @@ import eu.x45.listen45.recognition.Fingerprint
 import eu.x45.listen45.recognition.LandmarkMatcher
 import eu.x45.listen45.recognition.ReferenceCatalog
 import eu.x45.listen45.recognition.ReferenceTrack
-import eu.x45.listen45.recognition.WaveFile
-import java.io.IOException
+import eu.x45.listen45.recognition.ReferenceAudio
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -29,7 +28,6 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     )
 
     private val catalog = ReferenceCatalog.get(application)
-    private val resolver = application.contentResolver
     private val currentState = MutableStateFlow(State())
     internal val state = currentState.asStateFlow()
 
@@ -41,17 +39,10 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         if (state.value.busy) return
         updateCatalog {
             val samples = try {
-                resolver.openInputStream(uri)?.use { stream ->
-                    WaveFile.read(stream) { ensureActive() }
-                }
-            } catch (_: IOException) {
-                null
-            } catch (_: IllegalArgumentException) {
-                null
-            } catch (_: SecurityException) {
-                null
-            }
-            if (samples == null) {
+                ReferenceAudio.read(getApplication(), uri) { ensureActive() }
+            } catch (exception: CancellationException) {
+                throw exception
+            } catch (_: Exception) {
                 return@updateCatalog R.string.catalog_import_error
             }
             val landmarks = Fingerprint.landmarks(samples) { ensureActive() }

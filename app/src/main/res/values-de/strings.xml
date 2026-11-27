@@ -15,12 +15,12 @@
     <string name="navigate_up">Zurück</string>
     <string name="catalog_title">Referenzbibliothek</string>
     <string name="catalog_empty">Füge zuerst eine Referenzaufnahme hinzu.</string>
-    <string name="catalog_add">WAV-Referenz hinzufügen</string>
-    <string name="catalog_help">Importiere eine 16-Bit-PCM-WAV-Datei (Mono oder Stereo, mindestens 5 Sekunden). Listen45 indexiert die ersten zwei Minuten und speichert den Fingerabdruck auf diesem Gerät.</string>
+    <string name="catalog_add">Audio-Referenz hinzufügen</string>
+    <string name="catalog_help">Importiere mindestens fünf Sekunden Audio (Mono oder Stereo), etwa WAV, MP3, M4A oder FLAC. Listen45 indexiert die ersten zwei Minuten und speichert den Fingerabdruck auf diesem Gerät.</string>
     <string name="catalog_track_title">Titel</string>
     <string name="catalog_track_artist">Interpret (optional)</string>
     <string name="catalog_importing">Referenz wird indexiert…</string>
-    <string name="catalog_import_error">Die Datei konnte nicht indexiert werden. Wähle eine 16-Bit-PCM-WAV-Datei mit mindestens fünf Sekunden unterscheidbarem Ton.</string>
+    <string name="catalog_import_error">Die Datei konnte nicht indexiert werden. Wähle eine unterstützte Datei mit mindestens fünf Sekunden unterscheidbarem Ton.</string>
     <string name="catalog_limit">Die Referenzbibliothek ist voll (100 Titel).</string>
     <string name="catalog_delete">Referenz entfernen</string>
     <string name="catalog_delete_message">„%1$s“ aus der Referenzbibliothek entfernen?</string>
