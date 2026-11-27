@@ -47,4 +47,38 @@ if ! timeout 240s bash -c '
 fi
 
 "$adb" shell input keyevent 82
-./gradlew --no-daemon connectedDebugAndroidTest
+release_dir="$RUNNER_TEMP/listen45-release"
+unsigned="$release_dir/app-release-unsigned.apk"
+test_apk="$release_dir/emulator-only.apk"
+apksigner="$sdk/build-tools/35.0.0/apksigner"
+sha256sum "$unsigned"
+
+# This disposable key and the signed APK stay on this fresh emulator runner.
+export LISTEN45_EMULATOR_PASSWORD
+LISTEN45_EMULATOR_PASSWORD="$(openssl rand -hex 24)"
+keytool -genkeypair -alias emulator-only -keyalg RSA -keysize 2048 -validity 2 \
+    -storetype PKCS12 -keystore "$release_dir/emulator-only.p12" \
+    -storepass:env LISTEN45_EMULATOR_PASSWORD -dname 'CN=Listen45 emulator only'
+"$apksigner" sign --ks "$release_dir/emulator-only.p12" --ks-key-alias emulator-only \
+    --ks-pass env:LISTEN45_EMULATOR_PASSWORD --v4-signing-enabled false --out "$test_apk" "$unsigned"
+unset LISTEN45_EMULATOR_PASSWORD
+"$apksigner" verify --min-sdk-version 24 "$test_apk"
+
+app=eu.x45.listen45
+"$adb" install "$test_apk"
+"$adb" shell pm list packages -e --user 0 "$app" | tr -d '\r' | grep -Fx "package:$app"
+"$adb" shell cmd package resolve-activity --brief --user 0 \
+    -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p "$app" |
+    tr -d '\r' | grep -Fx "$app/.ui.MainActivity"
+"$adb" shell am start -W --user 0 \
+    -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p "$app" |
+    tr -d '\r' | grep -Fx 'Status: ok'
+"$adb" shell uiautomator dump /sdcard/listen45-launcher.xml
+"$adb" exec-out cat /sdcard/listen45-launcher.xml > "$RUNNER_TEMP/listen45-launcher.xml"
+python3 - "$RUNNER_TEMP/listen45-launcher.xml" <<'PYTHON'
+from sys import argv
+from xml.etree import ElementTree
+nodes = list(ElementTree.parse(argv[1]).iter("node"))
+assert any(node.get("package") == "eu.x45.listen45" and node.get("text") == "Listen45" for node in nodes)
+print("Listen45 is installed and its home screen is visible.")
+PYTHON
