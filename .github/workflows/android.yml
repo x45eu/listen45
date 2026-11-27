@@ -1,0 +1,74 @@
+name: Android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          sdk="$RUNNER_TEMP/android-sdk"
+          mkdir -p "$sdk/platforms" "$sdk/build-tools"
+          install_sdk_archive() {
+            local archive="$RUNNER_TEMP/$1"
+            curl --fail --silent --show-error --location --retry 3 \
+              "https://dl.google.com/android/repository/$1" --output "$archive"
+            printf '%s  %s\n' "$2" "$archive" | sha256sum --check
+            unzip -q "$archive" -d "$3"
+          }
+          install_sdk_archive platform-36_r02.zip 37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e "$sdk/platforms"
+          install_sdk_archive build-tools_r35_linux.zip bd3a4966912eb8b30ed0d00b0cda6b6543b949d5ffe00bea54c04c81e1561d88 "$sdk/build-tools"
+          install_sdk_archive platform-tools_r37.0.3-linux.zip 214548146cadb2ca3508143d8a1d4be4c59de5bb837253e3ede89ed74cf450d1 "$sdk"
+          mv "$sdk/build-tools/android-15" "$sdk/build-tools/35.0.0"
+          printf 'ANDROID_HOME=%s\nANDROID_SDK_ROOT=%s\n' "$sdk" "$sdk" >> "$GITHUB_ENV"
+      - name: Install the Android 36 test emulator
+        shell: bash
+        run: |
+          sdk="$ANDROID_HOME"
+          image="$sdk/system-images/android-36/default"
+          mkdir -p "$image"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://dl.google.com/android/repository/emulator-linux_x64-16982698.zip -o "$RUNNER_TEMP/emulator.zip"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://dl.google.com/android/repository/sys-img/android/x86_64-36_r02.zip -o "$RUNNER_TEMP/system-image.zip"
+          cd "$RUNNER_TEMP"
+          printf '%s\n' \
+            'cebcc36022e052ac1fa438466ada142d9e4c04dca8127758c3e195a3d5cc42e0  emulator.zip' \
+            'e1b9d9fb665001ef27b16e57d8762a2d54aec6bff617e17506edb8676667b9da  system-image.zip' | sha256sum --check
+          unzip -q emulator.zip -d "$sdk"
+          unzip -q system-image.zip -d "$image"
+          test -c /dev/kvm
+          sudo chgrp "$(id -gn)" /dev/kvm
+          sudo chmod g+rw /dev/kvm
+      - name: Build and check Android app
+        run: ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug assembleRelease
+      - name: Run app and codec tests on Android 36
+        run: scripts/test-on-emulator.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: listen45-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: listen45-release-unsigned
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
